@@ -2,12 +2,37 @@ const express = require('express');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 const app = express();
+
+
 app.use(express.json());
 
 // In-memory storage for training app data
 const trainingApps = {};
+
+app.post('/register', async (req, res) => {
+    const {userID, password} = req.body;
+
+    if (!userID || !password) {
+        return res.status(400).send('All fields are required.')
+    }
+
+    
+})
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Endpoint: Receive updates from training applications
 app.post('/update', (req, res) => {
@@ -27,6 +52,22 @@ app.post('/update', (req, res) => {
 app.get('/apps', (req, res) => {
     res.json(trainingApps);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Load SSL/TLS Certificates
 const privateKey = fs.readFileSync(path.join(__dirname, 'key.pem'), 'utf8');
