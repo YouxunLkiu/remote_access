@@ -1,5 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+//Making a default header for error Message
+const errmsg = 'Error occured in logprocess.js'
+
+
+const parentDir = path.dirname(__filename);
+
+console.log(parentDir);
 
 //Storing all of my log's path in a .txt file. 
 const logsDirectoryPath = path.join(__dirname, "logtrackers/logs")
@@ -7,13 +14,18 @@ const logPathsFile = path.join(__dirname, "logtrackers/logs", "logpaths.txt")
 const projectsDirectoryPath = path.join(__dirname, "logtrackers/proj_status")
 const projectsStatusFile = path.join(__dirname, "logtrackers/proj_status", "projects.txt")
 
+
+
+
+
+
 //Function that returns a log's path for further processing 
 function readLogPaths() {
     try {
         const logPaths = fs.readFileSync(logPathsFile, 'utf-8').split('\n').filter(Boolean);
         return logPaths;
     } catch (err) {
-        console.error('Error reading logpath.txt:', err);
+        console.error('Error reading logpath.txt:', errmsg, err);
         return [];
     }
 }
@@ -24,7 +36,7 @@ function readliveProjects() {
         const projects = fs.readFileSync(projectsStatusFile, 'utf-8').split('\n').filter(Boolean);
         return projects;
     } catch (err) {
-        console.error('Error reading project.txt:', err);
+        console.error('Error reading project.txt:', errmsg, err);
         return []
     }
 }
