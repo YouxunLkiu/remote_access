@@ -65,4 +65,5 @@ async function initializeLogSystem() {
 
 
 // Specify the path for logs
+
 initializeLogSystem(logsDirectoryPath);
