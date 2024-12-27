@@ -5,15 +5,17 @@ const path = require('path');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
+const cookieParser = require('cookie-parser');
 const User = require('./models/user');
 const TrainingLog = require('./models/monitor');
 const Command = require('./models/command');
 const connectDB = require('./config/db');
 const app = express();
+const logger = require('./logger');
 
 
 app.use(express.json());
+app.use(cookieParser());
 require('dotenv').config({ path: './seckey.env' });
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -55,8 +57,15 @@ app.post('/login', async (req, res) => {
         }
 
         // Generate JWT
-        const token = jwt.sign({ userID: user.userID }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userID: userID, roles: user.roles || ['mobile', 'trainer'] }, JWT_SECRET, { expiresIn: '1h' });
 
+        // Storing the token to cookie
+        res.cookie('authToken', token, {
+            httpOnly: true, // Prevents JavaScript access to the cookie
+            secure: process.env.NODE_ENV === 'production', // Ensures secure cookies in production
+            sameSite: 'strict', // CSRF protection
+            maxAge: 3600000 // Cookie expiration (1 hour)
+        });
         // Send response
         res.status(200).json({ message: 'Login successful!', token });
     } catch (error) {
@@ -144,8 +153,15 @@ app.post('/register', async (req, res) => {
         await newUser.save();
 
         //creat a JWT token
-        const token = jwt.sign({ userID }, 'your-secret-key', { expiresIn: '1h' });
-
+        const token = jwt.sign({ userID: userID, roles: roles || ['mobile', 'trainer'] }, 'your-secret-key', { expiresIn: '1h' });
+        
+        // Storing the token to cookie
+        res.cookie('authToken', token, {
+            httpOnly: true, // Prevents JavaScript access to the cookie
+            secure: process.env.NODE_ENV === 'production', // Ensures secure cookies in production
+            sameSite: 'strict', // CSRF protection
+            maxAge: 3600000 // Cookie expiration (1 hour)
+        });
         // Send the response
         res.status(201).json({
             message: 'User registered successfully!',
@@ -169,21 +185,25 @@ app.post('/register', async (req, res) => {
 
 /** This is used for authentication of the user account status */
 const authenticate = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).send('Access denied. No token provided.');
-
+    const token = req.cookies.authToken; // Replace 'authToken' with the name of your cookie
+    
+    if (!token) {
+        logger.error('No token provided in the request.');
+        return res.status(401).send('Access denied. No token provided.');
+    }
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded;
         next();
     } catch (err) {
+        logger.error(`Token verification failed: ${err.message}`);
         res.status(403).send('Invalid token.');
     }
 };
 // Example: Check for "trainer" or "mobile" role (maybe not needed )
 const authorizeRole = (roles) => (req, res, next) => {
     if (!req.user.roles || !roles.some(role => req.user.roles.includes(role))) {
-        return res.status(403).send('Access denied.');
+        return res.status(403).send('Access denied. Current account is not allowed to perform such task.');
     }
     next();
 };
@@ -220,26 +240,45 @@ app.put('/users/:userID/roles', authenticate, async (req, res) => {
 // GET /logs: Read log messages (Mobile)
 app.get('/logs', authenticate, authorizeRole(['mobile']), async (req, res) => {
     try {
-        const logs = await Log.find(); // Assuming you have a Log model
-        res.json(logs);
+        if (Object.keys(req.body).length === 1) {
+            const { userID } = req.body;
+            console.log(userID);
+            const logs = await TrainingLog.find({ userID: userID }); // Assuming you have a Log model
+            res.json(logs);
+        } else if (Object.keys(req.body).length === 2) {
+            const { userID, appID } = req.body;
+            const logs = await TrainingLog.find({ userID: userID, appID: appID }); // Assuming you have a Log model
+            res.json(logs);
+        } else {
+            res.status(400).send('Invalid request format. Please provide userID and optionally appID.');
+        }
+
     } catch (err) {
-        res.status(500).send('Failed to fetch logs.');
+        logger.error(`Failed to fetch logs: ${err.message}`);
+        res.status(500).send('Failed to fetch logs from using userID. Check userID. ');
     }
+    
 });
 
 //POST /logs: Write log message (Trainer)
 app.post('/logs', authenticate, authorizeRole(['trainer']), async (req, res) => {
-    const { message } = req.body;
+    const { appID, status, message } = req.body;
 
     if (!message) {
-        return res.status(400).send('Message is required.');
+        logger.warn('Full log message is missing.');
+        return res.status(400).send('Full log message is required.');
     }
 
     try {
-        const log = new Log({ message, createdBy: req.user.userID });
+        const log = new TrainingLog({ userID: req.user.userID, appID: appID, 
+            status: status, full_log: message
+        });
         await log.save();
+        logger.info(`Log created successfully for user: ${req.user.userID} with appID: ${appID}`);
+        
         res.status(201).send('Log saved successfully.');
     } catch (err) {
+        logger.error(`Failed to save log: ${err.message}`);
         res.status(500).send('Failed to save log.');
     }
 });
