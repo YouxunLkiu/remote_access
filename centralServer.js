@@ -12,7 +12,7 @@ const Command = require('./models/command');
 const connectDB = require('./config/db');
 const app = express();
 const logger = require('./logger');
-
+const executePythonFile = require('./services/commandExecutor');
 
 app.use(express.json());
 app.use(cookieParser());
@@ -30,6 +30,51 @@ const PORT = 3000; // Default HTTPS port
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+
+// ---------------------------------Middleware functions
+function refreshToken(req, res, next) {
+    const token = req.cookies.authToken;  // Get token from cookies (or header if you prefer)
+
+    if (!token) {
+        return res.status(401).send('Access denied. No token provided.');
+    }
+
+    // Verify and decode the token
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).send('Invalid token.');
+        }
+
+        // Here, you can refresh the token when the user performs an action
+        // For example, you can generate a new token with an extended expiration time
+        const newToken = jwt.sign(
+            { userID: user.userID, roles: user.roles }, // Include relevant user data in the new token
+            JWT_SECRET,
+            { expiresIn: '1h' }  // Set new expiration time (1 hour here)
+        );
+
+        // Send the new token back to the client (you can send it in a cookie or as a response header)
+        res.cookie('authToken', newToken, { httpOnly: true, secure: true }); // Set new token in cookie (for example)
+        
+        next();
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //------------------------------------User Login Endpoint Functions---------------------------------
@@ -76,16 +121,22 @@ app.post('/login', async (req, res) => {
 
 // Middleware to verify JWT (for protected routes)
 function authenticateToken(req, res, next) {
-    const token = req.header('Authorization')?.split(' ')[1]; // Expecting 'Bearer <token>'
+    // Extract token from cookies (assuming the cookie name is 'authToken')
+    const token = req.cookies.authToken;
     if (!token) {
-        return res.status(401).send('Access denied.');
+        return res.status(401).send('Access denied. No token provided.');
     }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
             return res.status(403).send('Invalid token.');
         }
-        req.user = user;
+
+        req.user = user;  // Store user data in the request object
+
+        // If you want to do something when a user logs in, like updating a last login time
+        // or checking other user data, you can handle it here
+
         next();
     });
 }
@@ -118,11 +169,6 @@ app.get('/status', authenticateToken, async (req, res) => {
         res.status(500).send('Error fetching user status.');
     }
 });
-
-
-
-
-
 
 
 
@@ -209,7 +255,7 @@ const authorizeRole = (roles) => (req, res, next) => {
 };
 
 //User role updates
-app.put('/users/:userID/roles', authenticate, async (req, res) => {
+app.put('/users/:userID/roles', authenticate, refreshToken, async (req, res) => {
     const { userID } = req.params;
     const { roles } = req.body;
 
@@ -238,11 +284,10 @@ app.put('/users/:userID/roles', authenticate, async (req, res) => {
 
 
 // GET /logs: Read log messages (Mobile)
-app.get('/logs', authenticate, authorizeRole(['mobile']), async (req, res) => {
+app.get('/logs', authenticate, authorizeRole(['mobile']), refreshToken,  async (req, res) => {
     try {
         if (Object.keys(req.body).length === 1) {
             const { userID } = req.body;
-            console.log(userID);
             const logs = await TrainingLog.find({ userID: userID }); // Assuming you have a Log model
             res.json(logs);
         } else if (Object.keys(req.body).length === 2) {
@@ -261,7 +306,7 @@ app.get('/logs', authenticate, authorizeRole(['mobile']), async (req, res) => {
 });
 
 //POST /logs: Write log message (Trainer)
-app.post('/logs', authenticate, authorizeRole(['trainer']), async (req, res) => {
+app.post('/logs', authenticate, authorizeRole(['trainer']), refreshToken, async (req, res) => {
     const { appID, status, message } = req.body;
 
     if (!message) {
@@ -286,17 +331,17 @@ app.post('/logs', authenticate, authorizeRole(['trainer']), async (req, res) => 
 
 //------------------------EXECUTATBALE COMMAND(TODO)--------------------------------------
 // POST /execute-command: Execute commands (Trainer)
-app.post('/execute-command', authenticate, authorizeRole(['trainer']), async (req, res) => {
-    const { command } = req.body;
+app.post('/execute-command', authenticate, authorizeRole(['trainer']), refreshToken, async (req, res) => {
+    const { filePath, args } = req.body;
 
-    if (!command) {
-        return res.status(400).send('Command is required.');
+    if (!filePath) {
+        return res.status(400).send('Python file path is required.');
     }
-
     try {
-        const result = await executeCommand(command); // Call the service
+        const result = await executePythonFile(filePath, args || []);
         res.status(200).json({ result });
     } catch (err) {
+        logger.error(`Failed to execute command: ${err.message}`);
         res.status(500).send('Command execution failed.');
     }
 });
@@ -307,11 +352,13 @@ app.get('/execution-status', authenticate, authorizeRole(['mobile']), async (req
         const status = await getExecutionStatus(); // Call a service or fetch from DB
         res.json(status);
     } catch (err) {
+        logger.error(`Failed to get command status: ${err.message}`);
         res.status(500).send('Failed to fetch execution status.');
     }
 });
 
 
+// ----------------------Socket Connection -----------------------------
 
 
 //-----------------------Endpoint TESTING: Endpoint testing mongoD connection-------------------

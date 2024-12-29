@@ -1,0 +1,4 @@
+error: Failed to execute command: executePythonFile is not defined {"timestamp":"2024-12-28T10:10:34.422Z"}
+error: Failed to execute command: executePythonFile is not defined {"timestamp":"2024-12-28T10:13:05.121Z"}
+error: Failed to execute command: executePythonFile is not defined {"timestamp":"2024-12-28T10:13:10.322Z"}
+error: Failed to execute command: executePythonFile is not a function {"timestamp":"2024-12-28T10:13:32.429Z"}

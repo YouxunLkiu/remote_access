@@ -1,2 +1,0 @@
-sample.txt
-more_sample.txt
