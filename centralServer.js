@@ -26,7 +26,7 @@ connectDB();
 
 // Initialize the port variable before use
 // Start HTTPS Server
-const PORT = 3000; // Default HTTPS port
+const PORT = 5000; // Default HTTP port for backend
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
@@ -82,17 +82,20 @@ function refreshToken(req, res, next) {
  * 
  */
 app.post('/login', async (req, res) => {
+    
     const { userID, password } = req.body;
-
+    
     if (!userID || !password) {
         return res.status(400).send('All fields are required.');
     }
-
+    
     try {
         // Find the user in the database
         const user = await User.findOne({ userID });
+       
         if (!user) {
             return res.status(404).send('User not found.');
+
         }
 
         // Compare the provided password with the hashed password
@@ -100,7 +103,7 @@ app.post('/login', async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).send('Invalid credentials.');
         }
-
+       
         // Generate JWT
         const token = jwt.sign({ userID: userID, roles: user.roles || ['mobile', 'trainer'] }, JWT_SECRET, { expiresIn: '1h' });
 
@@ -113,6 +116,7 @@ app.post('/login', async (req, res) => {
         });
         // Send response
         res.status(200).json({ message: 'Login successful!', token });
+        
     } catch (error) {
         console.error(error);
         res.status(500).send('Error during login.');
