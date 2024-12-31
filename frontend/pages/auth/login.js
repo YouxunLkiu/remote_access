@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 export default function SignIn() {
   const [userID, setuserID] = useState("");
   const [password, setPassword] = useState("");
+  const [dashboardType, setDashboardType] = useState("mobile");
   const [error, setError] = useState(null);
   const router = useRouter();
 
@@ -21,20 +22,25 @@ export default function SignIn() {
       },
       body: JSON.stringify({ userID, password }),
     });
-
-    
+   
     const data = await res.json();
 
     if (res.ok) {
-      // On success, you can redirect or show a success message
-      router.push("/dashboard");
+      // Redirect to the appropriate dashboard
+      if (dashboardType === "mobile") {
+        router.push("/mobile-dashboard");
+      } else {
+        router.push("/trainer-dashboard");
+      }
     } else {
       // On error, display an error message
       setError(data.message || "Something went wrong");
     }
   };
+  
 
   return (
+    
     <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
       <h1>Login</h1>
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -61,37 +67,66 @@ export default function SignIn() {
             required
           />
         </div>
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "10px",
-            backgroundColor: "#0070f3",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Sign In
-        </button>
+  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
+  {/* Login Button */}
+  <button
+    type="submit"
+    style={{
+      flex: 2,
+      padding: "10px",
+      marginRight: "10px",
+      backgroundColor: "#0070f3",
+      color: "#fff",
+      border: "none",
+      cursor: "pointer",
+    }}
+  >
+    Login
+  </button>
+
+  {/* Register Button */}
+  <button
+    type="button"
+    onClick={() => window.location.href = "/auth/register"}
+    style={{
+      flex: 2,
+      padding: "10px",
+      backgroundColor: "#4CAF50",
+      color: "#fff",
+      border: "none",
+      cursor: "pointer",
+    }}
+  >
+    Register
+  </button>
+</div>
       </form>
 
-      {/* Register Button */}
-      <div style={{ marginTop: "10px" }}>
-        <button
-          onClick={() => window.location.href = "/Create new account"} // Replace "/register" with your actual registration page route
-          style={{
-            width: "100%",
-            padding: "10px",
-            backgroundColor: "#4CAF50", // Different color for Register
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Register
-        </button>
-      </div>
+
+
+      {/* Flip Switch for Dashboard Type */}
+      <div style={{ marginBottom: "20px" }}>
+  <label>
+    <input
+      type="radio"
+      name="dashboardType"
+      value="trainer"
+      checked={dashboardType === "trainer"}
+      onChange={() => setDashboardType("trainer")}
+    />
+    Trainer
+  </label>
+  <label style={{ marginLeft: "10px" }}>
+    <input
+      type="radio"
+      name="dashboardType"
+      value="mobile"
+      checked={dashboardType === "mobile"}
+      onChange={() => setDashboardType("mobile")}
+    />
+    Mobile
+  </label>
+</div>
     </div>
   );
 }

@@ -37,13 +37,13 @@ function refreshToken(req, res, next) {
     const token = req.cookies.authToken;  // Get token from cookies (or header if you prefer)
 
     if (!token) {
-        return res.status(401).send('Access denied. No token provided.');
+        return res.status(401).json({ message: 'Access denied. No token provided.'});
     }
 
     // Verify and decode the token
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            return res.status(403).send('Invalid token.');
+            return res.status(403).json({ message: 'Invalid token.'});
         }
 
         // Here, you can refresh the token when the user performs an action
@@ -86,7 +86,7 @@ app.post('/login', async (req, res) => {
     const { userID, password } = req.body;
     
     if (!userID || !password) {
-        return res.status(400).send('All fields are required.');
+        return res.status(400).json({ message: 'All fields are required.'});
     }
     
     try {
@@ -94,14 +94,15 @@ app.post('/login', async (req, res) => {
         const user = await User.findOne({ userID });
        
         if (!user) {
-            return res.status(404).send('User not found.');
+            console.log("User is not found");
+            return res.status(404).json({ message: 'User not found.'});
 
         }
 
         // Compare the provided password with the hashed password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).send('Invalid credentials.');
+            return res.status(401).json({ message: 'Invalid credentials.'});
         }
        
         // Generate JWT
@@ -119,7 +120,7 @@ app.post('/login', async (req, res) => {
         
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error during login.');
+        res.status(500).json({ message: 'Error during login.'});
     }
 });
 
@@ -128,12 +129,12 @@ function authenticateToken(req, res, next) {
     // Extract token from cookies (assuming the cookie name is 'authToken')
     const token = req.cookies.authToken;
     if (!token) {
-        return res.status(401).send('Access denied. No token provided.');
+        return res.status(401).json({ message: 'Access denied. No token provided.'});
     }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            return res.status(403).send('Invalid token.');
+            return res.status(403).json({ message: 'Invalid token.'});
         }
 
         req.user = user;  // Store user data in the request object
@@ -157,7 +158,7 @@ app.get('/status', authenticateToken, async (req, res) => {
         // Find the user in the database
         const user = await User.findOne({ userID });
         if (!user) {
-            return res.status(404).send('User not found.');
+            return res.status(404).json({ message: 'User not found.'});
         }
 
         // Respond with user details (excluding sensitive info like password)
@@ -170,7 +171,7 @@ app.get('/status', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error fetching user status.');
+        res.status(500).json({ message: 'Error fetching user status.'});
     }
 });
 
@@ -182,14 +183,14 @@ app.post('/register', async (req, res) => {
     const { userID, password, roles } = req.body;
 
     if (!userID || !password) {
-        return res.status(400).send('All fields are required.')
+        return res.status(400).json({ message: 'All fields are required.'})
     }
 
     try {
         //yet to be completed
         const existingUser = await User.findOne({ userID });
         if (existingUser) {
-            return res.status(400).send('User with this userID has been created.');
+            return res.status(400).json({ message: 'User with this userID has been created.'});
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -220,7 +221,7 @@ app.post('/register', async (req, res) => {
 
     }  catch (error) {
         console.error(error);
-        res.status(500).send('Error during registration.');
+        res.status(500).json({ message: 'Error during registration.'});
     }
     
 });
@@ -239,7 +240,7 @@ const authenticate = (req, res, next) => {
     
     if (!token) {
         logger.error('No token provided in the request.');
-        return res.status(401).send('Access denied. No token provided.');
+        return res.status(401).json({ message: 'Access denied. No token provided.'});
     }
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
@@ -247,13 +248,13 @@ const authenticate = (req, res, next) => {
         next();
     } catch (err) {
         logger.error(`Token verification failed: ${err.message}`);
-        res.status(403).send('Invalid token.');
+        res.status(403).json({ message: 'Invalid token.'});
     }
 };
 // Example: Check for "trainer" or "mobile" role (maybe not needed )
 const authorizeRole = (roles) => (req, res, next) => {
     if (!req.user.roles || !roles.some(role => req.user.roles.includes(role))) {
-        return res.status(403).send('Access denied. Current account is not allowed to perform such task.');
+        return res.status(403).json({ message: 'Access denied. Current account is not allowed to perform such task.'});
     }
     next();
 };
@@ -264,7 +265,7 @@ app.put('/users/:userID/roles', authenticate, refreshToken, async (req, res) => 
     const { roles } = req.body;
 
     if (!roles || !Array.isArray(roles)) {
-        return res.status(400).send('Roles must be an array.');
+        return res.status(400).json({ message: 'Roles must be an array.'});
     }
 
     try {
@@ -275,13 +276,13 @@ app.put('/users/:userID/roles', authenticate, refreshToken, async (req, res) => 
         );
 
         if (!user) {
-            return res.status(404).send('User not found.');
+            return res.status(404).json({ message: 'User not found.'});
         }
 
         res.json({ message: 'Roles updated successfully.', user });
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error updating roles.');
+        res.status(500).json({ message: 'Error updating roles.'});
     }
 });
 
@@ -299,12 +300,12 @@ app.get('/logs', authenticate, authorizeRole(['mobile']), refreshToken,  async (
             const logs = await TrainingLog.find({ userID: userID, appID: appID }); // Assuming you have a Log model
             res.json(logs);
         } else {
-            res.status(400).send('Invalid request format. Please provide userID and optionally appID.');
+            res.status(400).json({ message: 'Invalid request format. Please provide userID and optionally appID.'});
         }
 
     } catch (err) {
         logger.error(`Failed to fetch logs: ${err.message}`);
-        res.status(500).send('Failed to fetch logs from using userID. Check userID. ');
+        res.status(500).json({ message: 'Failed to fetch logs from using userID. Check userID. '});
     }
     
 });
@@ -315,7 +316,7 @@ app.post('/logs', authenticate, authorizeRole(['trainer']), refreshToken, async 
 
     if (!message) {
         logger.warn('Full log message is missing.');
-        return res.status(400).send('Full log message is required.');
+        return res.status(400).json({ message: 'Full log message is required.'});
     }
 
     try {
@@ -325,10 +326,10 @@ app.post('/logs', authenticate, authorizeRole(['trainer']), refreshToken, async 
         await log.save();
         logger.info(`Log created successfully for user: ${req.user.userID} with appID: ${appID}`);
         
-        res.status(201).send('Log saved successfully.');
+        res.status(201).json({ message: 'Log saved successfully.'});
     } catch (err) {
         logger.error(`Failed to save log: ${err.message}`);
-        res.status(500).send('Failed to save log.');
+        res.status(500).json({ message: 'Failed to save log.'});
     }
 });
 
@@ -339,14 +340,14 @@ app.post('/execute-command', authenticate, authorizeRole(['trainer']), refreshTo
     const { filePath, args } = req.body;
 
     if (!filePath) {
-        return res.status(400).send('Python file path is required.');
+        return res.status(400).json({ message: 'Python file path is required.'});
     }
     try {
         const result = await executePythonFile(filePath, args || []);
         res.status(200).json({ result });
     } catch (err) {
         logger.error(`Failed to execute command: ${err.message}`);
-        res.status(500).send('Command execution failed.');
+        res.status(500).json({ message: 'Command execution failed.'});
     }
 });
 
@@ -357,7 +358,7 @@ app.get('/execution-status', authenticate, authorizeRole(['mobile']), async (req
         res.json(status);
     } catch (err) {
         logger.error(`Failed to get command status: ${err.message}`);
-        res.status(500).send('Failed to fetch execution status.');
+        res.status(500).json({ message: 'Failed to fetch execution status.'});
     }
 });
 

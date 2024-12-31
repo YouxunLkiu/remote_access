@@ -16,8 +16,9 @@ export default async function handler(req, res) {
         body: JSON.stringify({ userID, password }),
       });
       
+      
       const data = await response.json();
-  
+      
       if (response.ok) {
         // Successful login: return the token or user data
         res.status(200).json(data);
