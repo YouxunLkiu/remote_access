@@ -28,9 +28,9 @@ export default function SignIn() {
     if (res.ok) {
       // Redirect to the appropriate dashboard
       if (dashboardType === "mobile") {
-        router.push("/mobile-dashboard");
+        router.push("/dashboard/mobile");
       } else {
-        router.push("/trainer-dashboard");
+        router.push("/dashboard/trainer");
       }
     } else {
       // On error, display an error message
