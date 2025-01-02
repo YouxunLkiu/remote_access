@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #353333;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ab6565;
+  }
+}
+
+.title {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Verdana, Geneva, Tahoma, sans-serif
+
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button {
+  @apply px-6 py-3 rounded-lg shadow transition;
+}
+
+.button-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-500;
+}
+
+.button-secondary {
+  @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+}
+
+.header {
+  @apply bg-blue-600 text-white py-4 shadow-lg;
+}
+
+.heroTitle {
+  @apply text-4xl font-extrabold text-center mb-4;
+}
+

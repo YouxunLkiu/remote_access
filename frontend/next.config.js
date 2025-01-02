@@ -4,7 +4,7 @@ module.exports = {
       return [
         {
           source: '/api/:path*', // This matches any request starting with /api/
-          destination: 'http://localhost:5000/:path*', // Proxy to the backend
+          destination: 'http://localhost:4000/:path*', // Proxy to the backend
         },
       ];
     },

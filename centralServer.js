@@ -3,7 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const User = require('./models/user');
@@ -26,7 +26,7 @@ connectDB();
 
 // Initialize the port variable before use
 // Start HTTPS Server
-const PORT = 5000; // Default HTTP port for backend
+const PORT = 4000; // Default HTTP port for backend
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
