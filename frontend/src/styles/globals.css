@@ -21,22 +21,28 @@
 
 }
 
-body {
+.body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-button {
-  @apply px-6 py-3 rounded-lg shadow transition;
+
+
+.button-primary-dark {
+  @apply bg-gray-800 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-300 hover:text-gray-800 hover:rounded-xl transition-all;
 }
 
-.button-primary {
-  @apply bg-blue-600 text-white hover:bg-blue-500;
+.button-primary-light {
+  @apply bg-gray-200 text-gray-800 px-6 py-2 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
 }
 
-.button-secondary {
-  @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+.button-navigation {
+  @apply  bg-gray-200 text-gray-800 px-3 py-1 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
+}
+
+.button-navigation-darker {
+  @apply  bg-gray-400 text-gray-800 px-3 py-1 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
 }
 
 .header {
@@ -44,6 +50,19 @@ button {
 }
 
 .heroTitle {
-  @apply text-4xl font-extrabold text-center mb-4;
+  @apply text-5xl font-mono font-extrabold text-center mb-4;
 }
 
+.navbar-spacing {
+  @apply flex space-x-2
+}
+
+
+/* Login/registerpage page styling*/
+.logintext {
+  @apply text-center 
+}
+
+.login-register-button {
+  @apply  bg-gray-400 text-gray-800 px-3 py-1 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
+}
