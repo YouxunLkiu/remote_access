@@ -60,9 +60,17 @@
 
 /* Login/registerpage page styling*/
 .logintext {
-  @apply text-center 
+  @apply text-center font-sans font-bold  text-2xl py-7
 }
 
 .login-register-button {
-  @apply  bg-gray-400 text-gray-800 px-3 py-1 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
+  @apply flex-auto bg-gray-400 text-gray-800 px-3 py-1 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
+}
+
+.login-register-button2 {
+  @apply flex-auto bg-gray-100 text-gray-800 px-3 py-1 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
+}
+
+.login-textbox {
+  @apply max-w-screen-lg h-9 justify-normal
 }

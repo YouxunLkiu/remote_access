@@ -334,6 +334,10 @@ app.post('/logs', authenticate, authorizeRole(['trainer']), refreshToken, async 
 });
 
 
+
+//------------------------Mobile Dashboard Functions(TODO)--------------------------------
+
+
 //------------------------EXECUTATBALE COMMAND(TODO)--------------------------------------
 // POST /execute-command: Execute commands (Trainer)
 app.post('/execute-command', authenticate, authorizeRole(['trainer']), refreshToken, async (req, res) => {
