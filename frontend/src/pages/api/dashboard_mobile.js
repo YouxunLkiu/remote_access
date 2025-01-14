@@ -3,15 +3,15 @@ export default async function handler(req, res) {
         return res.status(405).json({ message: "Method Not Allowed" });
     }
 
-    const { } = req.body;
+    const {userID} = req.body;
 
     try {
-        const response = await fetch("http://localhost:4000/login", {
+        const response = await fetch("http://localhost:4000/mobileDB", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ userID, password }),
+          body: JSON.stringify({ userID: userID }),
         });
         
         

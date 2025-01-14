@@ -7,16 +7,17 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const router = useRouter();
   const { userID } = router.query;
+  const [programs, setPrograms] = useState([]);
   
   
   async function fetchDashboardData() {
     try {
-      const res = await fetch("/api/dashboard", {
-        method: "GET",
+      const res = await fetch("/api/dashboard_mobile", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        // No body for GET requests; remove this line.
+        body: JSON.stringify({ userID: userID }),
       });
   
       if (res.ok) {
@@ -43,7 +44,7 @@ export default function Dashboard() {
       <div
         className={`${
           isSidebarOpen ? "block" : "hidden"
-        } md:block bg-blue-800 text-white w-64 h-full p-5 fixed md:relative z-20`}
+        } md:block bg-primary text-white w-64 h-full p-5 fixed md:relative z-20`}
       >
         <h2 className="text-xl font-bold mb-6">Welcome {userID} </h2>
         <ul>

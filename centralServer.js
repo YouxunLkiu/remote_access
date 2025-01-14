@@ -77,7 +77,7 @@ function refreshToken(req, res, next) {
 
 
 
-//------------------------------------User Login Endpoint Functions---------------------------------
+//------------------------------------User Auth Endpoint Functions---------------------------------
 /**
  * 
  */
@@ -237,7 +237,7 @@ app.post('/register', async (req, res) => {
 /** This is used for authentication of the user account status */
 const authenticate = (req, res, next) => {
     const token = req.cookies.authToken; // Replace 'authToken' with the name of your cookie
-    
+    console.log(req);
     if (!token) {
         logger.error('No token provided in the request.');
         return res.status(401).json({ message: 'Access denied. No token provided.'});
@@ -336,6 +336,143 @@ app.post('/logs', authenticate, authorizeRole(['trainer']), refreshToken, async 
 
 
 //------------------------Mobile Dashboard Functions(TODO)--------------------------------
+
+// This function will fetch all of the connected trainer from this account.
+app.post('/mobileDB', authenticate, authorizeRole(['mobile']), refreshToken, async (req, res) => {
+    const { userID } = req.body;
+    //TODO: Currently possess the userID, need to fetch all infos
+
+
+});
+
+
+//------------------------Trainer Dashboard Functions(TODO)--------------------------------
+app.post('/trainerDB',authenticate, authorizeRole(['trainer']), refreshToken, async (req, res) => {
+
+});
+
+
+
+//bellow functions keeps the trainer alive and not sleep while it is training.
+app.post("/api/trainer/keepalive", (req, res) => {
+    const { trainerID } = req.body;
+  
+    if (!trainerID) {
+      return res.status(400).json({ message: "Missing trainerID" });
+    }
+  
+    // Update the trainer's last active time
+    trainerStatus[trainerID] = Date.now();
+  
+    console.log(`Trainer ${trainerID} is active`);
+    res.status(200).json({ message: "Keep-alive received" });
+  });
+  
+  // Endpoint to check if a trainer is active
+  app.get("/api/trainer/status/:trainerID", (req, res) => {
+    const { trainerID } = req.params;
+  
+    if (!trainerID) {
+      return res.status(400).json({ message: "Missing trainerID" });
+    }
+  
+    const lastActive = trainerStatus[trainerID];
+    const now = Date.now();
+    const isActive = lastActive && now - lastActive < 60000; // Active if last heartbeat was within 1 minute
+  
+    res.status(200).json({ trainerID, isActive });
+  });
+
+
+
+  // Register a training machine
+app.post("/api/training/register", authenticate, authorizeRole(['trainer']), refreshToken, async (req, res) => {
+    const { userID, machineID, machineIP } = req.body;
+  
+
+
+    if (!users[userID]) {
+      return res.status(404).json({ error: "User not found" });
+    }
+  
+    trainingMachines[userID] = { machineID, machineIP };
+    return res.status(200).json({ message: "Training machine registered successfully" });
+  });
+  
+  // Start training
+  app.post("/api/training/start", async (req, res) => {
+    const { userID, token, params } = req.body;
+  
+    if (!users[userID] || users[userID].token !== token) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+  
+    const machine = trainingMachines[userID];
+    if (!machine) {
+      return res.status(404).json({ error: "No registered training machine" });
+    }
+  
+    try {
+      const response = await fetch(`http://${machine.machineIP}:5000/start-training`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
+      const result = await response.json();
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Error starting training:", error);
+      return res.status(500).json({ error: "Failed to start training" });
+    }
+  });
+  
+  // Fetch logs
+  app.get("/api/training/logs", async (req, res) => {
+    const { userID, token } = req.query;
+  
+    if (!users[userID] || users[userID].token !== token) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+  
+    const machine = trainingMachines[userID];
+    if (!machine) {
+      return res.status(404).json({ error: "No registered training machine" });
+    }
+  
+    try {
+      const response = await fetch(`http://${machine.machineIP}:5000/fetch-logs`);
+      const logs = await response.json();
+      return res.status(200).json(logs);
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+      return res.status(500).json({ error: "Failed to fetch logs" });
+    }
+  });
+  
+  // Stop training
+  app.post("/api/training/stop", async (req, res) => {
+    const { userID, token } = req.body;
+  
+    if (!users[userID] || users[userID].token !== token) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+  
+    const machine = trainingMachines[userID];
+    if (!machine) {
+      return res.status(404).json({ error: "No registered training machine" });
+    }
+  
+    try {
+      const response = await fetch(`http://${machine.machineIP}:5000/stop-training`, {
+        method: "POST",
+      });
+      const result = await response.json();
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Error stopping training:", error);
+      return res.status(500).json({ error: "Failed to stop training" });
+    }
+  });
 
 
 //------------------------EXECUTATBALE COMMAND(TODO)--------------------------------------
