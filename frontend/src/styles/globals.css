@@ -30,7 +30,7 @@
 
 
 .button-primary-dark {
-  @apply bg-gray-800 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-300 hover:text-gray-800 hover:rounded-xl transition-all;
+  @apply bg-gray-800 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-300 hover:text-gray-800 hover:rounded-xl transition-all;
 }
 
 .button-primary-light {
@@ -64,7 +64,7 @@
 }
 
 .login-register-button {
-  @apply flex-auto bg-gray-400 text-gray-800 px-3 py-1 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
+  @apply flex-auto bg-gray-400 text-gray-800 px-6 py-2 rounded-lg shadow  hover:bg-gray-800 hover:text-white hover:rounded-xl transition-all ;
 }
 
 .login-register-button2 {
@@ -73,4 +73,8 @@
 
 .login-textbox {
   @apply max-w-screen-lg h-9 justify-normal
+}
+
+.login-button-nocolor {
+  @apply  px-6 py-2 rounded-lg shadow  hover:rounded-xl transition-all;
 }

@@ -86,7 +86,7 @@ export default function SignIn() {
             {/* Login Button */}
             <button
               type="submit"
-              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+              className="login-button-nocolor  hover:bg-blue-600 hover:text-white"
             >
               Login
             </button>
@@ -94,7 +94,7 @@ export default function SignIn() {
             <button
               type="button"
               onClick={() => (window.location.href = "/auth/register")}
-              className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+              className=" button-primary-light  bg-gray-500 hover:bg-gray-600"
             >
               Register
             </button>

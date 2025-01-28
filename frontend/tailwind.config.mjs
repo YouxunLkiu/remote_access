@@ -16,6 +16,9 @@ export default {
         primary: '#232326',
         secondary: '#d7d7d9',
         grey: colors.gray,
+        status_idle: '228B22',
+        status_offline: 'FF3800' ,
+        status_inprogress: 'FF8C00'
       },
     },
   },

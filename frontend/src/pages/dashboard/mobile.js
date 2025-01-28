@@ -50,7 +50,8 @@ export default function Dashboard() {
         <ul>
           <li>
             <a href="#" className="block py-2 px-4 rounded hover:bg-blue-700">
-              Overview
+              Your Projects
+              
             </a>
           </li>
           <li>
@@ -80,7 +81,7 @@ export default function Dashboard() {
         >
             {isSidebarOpen ? "Close Menu" : "Open Menu"}
         </button>
-        <h1 className="text-2xl font-bold text-grey-200"> Overview</h1>
+        <h1 className="text-2xl font-bold text-grey-200"> Your Projects</h1>
         </div>
 
         {/* Dashboard Widgets/Content */}
