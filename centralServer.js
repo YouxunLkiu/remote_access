@@ -11,11 +11,16 @@ const TrainingLog = require('./models/monitor');
 const Command = require('./models/command');
 const connectDB = require('./config/db');
 const app = express();
+const WebSocket = require('ws');
+const server = https.createServer(app);
 const logger = require('./logger');
+const wss = new WebSocket.Server({server});
 const executePythonFile = require('./services/commandExecutor');
+
 
 app.use(express.json());
 app.use(cookieParser());
+
 require('dotenv').config({ path: './seckey.env' });
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -26,13 +31,25 @@ connectDB();
 
 // Initialize the port variable before use
 // Start HTTPS Server
-const PORT = 4000; // Default HTTP port for backend
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Secure server is running on port ${PORT}`);
 });
 
+// ---------------- WebSocket Handling ----------------
+wss.on('connection', (ws) => {
+    console.log('Client connected to WebSocket');
 
-// ---------------------------------Middleware functions
+    ws.on('message', (message) => {
+        console.log(`Received message: ${message}`);
+        ws.send(`Echo: ${message}`); // Example response
+    });
+
+    ws.on('close', () => {
+        console.log('Client disconnected from WebSocket');
+    });
+});
+
+// ---------------------------------Middleware functions-----------------------------
 function refreshToken(req, res, next) {
     const token = req.cookies.authToken;  // Get token from cookies (or header if you prefer)
 
@@ -60,18 +77,6 @@ function refreshToken(req, res, next) {
         next();
     });
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -115,6 +120,10 @@ app.post('/login', async (req, res) => {
             sameSite: 'strict', // CSRF protection
             maxAge: 3600000 // Cookie expiration (1 hour)
         });
+
+    
+    
+        res.status(200).json({ message: 'Login successful!', token });
         // Send response
         res.status(200).json({ message: 'Login successful!', token });
         
@@ -226,10 +235,7 @@ app.post('/register', async (req, res) => {
     
 });
 
-
-
-
-
+\
 
 
 //----------------------- Main Functions -------------------
@@ -348,6 +354,7 @@ app.post('/mobileDB', authenticate, authorizeRole(['mobile']), refreshToken, asy
 
 //------------------------Trainer Dashboard Functions(TODO)--------------------------------
 app.post('/trainerDB',authenticate, authorizeRole(['trainer']), refreshToken, async (req, res) => {
+    const { projectName, projectDescription } = req.body;
 
 });
 
@@ -385,96 +392,7 @@ app.post("/api/trainer/keepalive", (req, res) => {
 
 
 
-  // Register a training machine
-app.post("/api/training/register", authenticate, authorizeRole(['trainer']), refreshToken, async (req, res) => {
-    const { userID, machineID, machineIP } = req.body;
-  
-
-
-    if (!users[userID]) {
-      return res.status(404).json({ error: "User not found" });
-    }
-  
-    trainingMachines[userID] = { machineID, machineIP };
-    return res.status(200).json({ message: "Training machine registered successfully" });
-  });
-  
-  // Start training
-  app.post("/api/training/start", async (req, res) => {
-    const { userID, token, params } = req.body;
-  
-    if (!users[userID] || users[userID].token !== token) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-  
-    const machine = trainingMachines[userID];
-    if (!machine) {
-      return res.status(404).json({ error: "No registered training machine" });
-    }
-  
-    try {
-      const response = await fetch(`http://${machine.machineIP}:5000/start-training`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      });
-      const result = await response.json();
-      return res.status(200).json(result);
-    } catch (error) {
-      console.error("Error starting training:", error);
-      return res.status(500).json({ error: "Failed to start training" });
-    }
-  });
-  
-  // Fetch logs
-  app.get("/api/training/logs", async (req, res) => {
-    const { userID, token } = req.query;
-  
-    if (!users[userID] || users[userID].token !== token) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-  
-    const machine = trainingMachines[userID];
-    if (!machine) {
-      return res.status(404).json({ error: "No registered training machine" });
-    }
-  
-    try {
-      const response = await fetch(`http://${machine.machineIP}:5000/fetch-logs`);
-      const logs = await response.json();
-      return res.status(200).json(logs);
-    } catch (error) {
-      console.error("Error fetching logs:", error);
-      return res.status(500).json({ error: "Failed to fetch logs" });
-    }
-  });
-  
-  // Stop training
-  app.post("/api/training/stop", async (req, res) => {
-    const { userID, token } = req.body;
-  
-    if (!users[userID] || users[userID].token !== token) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-  
-    const machine = trainingMachines[userID];
-    if (!machine) {
-      return res.status(404).json({ error: "No registered training machine" });
-    }
-  
-    try {
-      const response = await fetch(`http://${machine.machineIP}:5000/stop-training`, {
-        method: "POST",
-      });
-      const result = await response.json();
-      return res.status(200).json(result);
-    } catch (error) {
-      console.error("Error stopping training:", error);
-      return res.status(500).json({ error: "Failed to stop training" });
-    }
-  });
-
-
+ 
 //------------------------EXECUTATBALE COMMAND(TODO)--------------------------------------
 // POST /execute-command: Execute commands (Trainer)
 app.post('/execute-command', authenticate, authorizeRole(['trainer']), refreshToken, async (req, res) => {
@@ -504,8 +422,13 @@ app.get('/execution-status', authenticate, authorizeRole(['mobile']), async (req
 });
 
 
-// ----------------------Socket Connection -----------------------------
-
+// ---------------------- Project/Program management-----------------------------
+//POST /addproject for the trainer environment to get linkage with the program.
+app.post( '/addProject', authenticate, authorizeRole(['trainer']), async (req, res) => {
+    const {userID, projectName, projectDescription } = req.body;
+        //check if such project name is already named.
+    
+} );
 
 //-----------------------Endpoint TESTING: Endpoint testing mongoD connection-------------------
 
