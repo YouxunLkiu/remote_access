@@ -12,14 +12,20 @@ const Command = require('./models/command');
 const connectDB = require('./config/db');
 const app = express();
 const WebSocket = require('ws');
-const server = https.createServer(app);
 const logger = require('./logger');
+
+const server = https.createServer({
+    key: fs.readFileSync('./ssl/server.key'),
+    cert: fs.readFileSync('./ssl/server.cert')
+}, app);
 const wss = new WebSocket.Server({server});
 const executePythonFile = require('./services/commandExecutor');
-
+const PORT = 4000;
 
 app.use(express.json());
 app.use(cookieParser());
+
+
 
 require('dotenv').config({ path: './seckey.env' });
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -30,6 +36,9 @@ connectDB();
 //making sure the server is running
 
 // Initialize the port variable before use
+// app.listen(PORT, () => {
+//     console.log(`Server is running on port ${PORT}`);
+// });
 // Start HTTPS Server
 server.listen(PORT, () => {
     console.log(`Secure server is running on port ${PORT}`);
@@ -125,7 +134,7 @@ app.post('/login', async (req, res) => {
     
         res.status(200).json({ message: 'Login successful!', token });
         // Send response
-        res.status(200).json({ message: 'Login successful!', token });
+        
         
     } catch (error) {
         console.error(error);
@@ -235,7 +244,6 @@ app.post('/register', async (req, res) => {
     
 });
 
-\
 
 
 //----------------------- Main Functions -------------------
