@@ -1,3 +1,5 @@
+import cookie from "cookie"; 
+
 export default async function handler(req, res) {
     
     if (req.method !== "POST") {
@@ -14,6 +16,7 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ userID, password }),
+        
       });
       
       
@@ -21,8 +24,8 @@ export default async function handler(req, res) {
       
       if (response.ok) {
         // Successful login: return the token or user data
-        localStorage.setItem("authToken", data.token);
-        const ws = new WebSocket(`wss://your-central-server.com?token=${token}`);
+       
+        const ws = new WebSocket(`wss://localhost:4000?token=${data.token}`);
 
         ws.onopen = () => {
           console.log("WebSocket connected");

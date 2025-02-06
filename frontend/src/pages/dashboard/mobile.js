@@ -1,6 +1,7 @@
 // pages/dashboard.js
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { useRouter } from "next/router";
+import WebSocketClient from "../websockets/clientwebsocket";
 
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -9,33 +10,43 @@ export default function Dashboard() {
   const { userID } = router.query;
   const [programs, setPrograms] = useState([]);
   
-  
-  async function fetchDashboardData() {
-    try {
-      const res = await fetch("/api/dashboard_mobile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userID: userID }),
-      });
-  
-      if (res.ok) {
-        const data = await res.json();
-        console.log("Dashboard Data:", data);
-        // Process and render your dashboard data here.
-      } else {
-        console.error("Failed to fetch dashboard data:", res.statusText);
+ 
+  const dummyPrograms = [
+    { id: 1, title: "Project A", details: "Details of Project A" },
+    { id: 2, title: "Project B", details: "Details of Project B" },
+    { id: 3, title: "Project C", details: "Details of Project C" },
+  ];
+  useEffect(() => {
+    // Check if userID exists before fetching
+    if (!userID) return;
+
+    // Set the dummy data initially (only once on mount)
+    setPrograms(dummyPrograms);
+
+    async function fetchDashboardData() {
+      try {
+        const res = await fetch("/api/dashboard_mobile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userID }), // Ensure userID is passed
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log("Dashboard Data:", data);
+          setPrograms(data.programs); // Replace dummy data with fetched data
+        } else {
+          console.error("Failed to fetch dashboard data:", res.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
       }
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
     }
-  }
+
+    // Only fetch data if it's available
+    fetchDashboardData();
+  }, [userID]); // Run this effect only when userID changes
   
-  // Call the function as soon as the page loads
-  fetchDashboardData();
-
-
 
 
   return (
@@ -84,12 +95,16 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-grey-200"> Your Projects</h1>
         </div>
 
+
+        {/* WebSocket Connection */}
+        {userID && <WebSocketClient username={userID} type="mobile" />} 
+
         {/* Dashboard Widgets/Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {programs.map((program) => (
-            <div key={program.id} className="bg-white p-6 rounded shadow-md">
-            <h3 className="text-lg font-semibold mb-4">{program.title}</h3>
-            <p>{program.details}</p>
+        {programs.map((dummyPrograms) => (
+            <div key={dummyPrograms.id} className="bg-white p-6 rounded shadow-md">
+            <h3 className="text-lg font-semibold mb-4">{dummyPrograms.title}</h3>
+            <p>{dummyPrograms.details}</p>
             </div>
         ))}
         </div>

@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import { useRouter } from "next/router";  
 
 // AddProjectModal Component
 const AddProjectModal = ({ isOpen, onClose, addProject }) => {
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const { userID } = router.query;
+  
+  const router = useRouter();  // Initialize the useRouter hook
+  const { userID } = router.query;    
 
   const handleSubmit = async () => {
     if (!projectName || !projectDescription) {

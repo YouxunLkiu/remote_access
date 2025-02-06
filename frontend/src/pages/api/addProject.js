@@ -2,7 +2,10 @@ export default async function handler(req, res) {
     if (req.method !== "POST") {
         return res.status(405).json({ message: "Method Not Allowed" });
     }
-
+    
+    const agent = new https.Agent({
+      rejectUnauthorized: false, // Ignore self-signed certificate issues
+    });
     const {userID, projectName, projectDescription } = req.body;
 
     try {
@@ -12,6 +15,7 @@ export default async function handler(req, res) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ userID:userID, userprojectNameID: projectName, projectDescription: projectDescription }),
+          agent
         });
         
         

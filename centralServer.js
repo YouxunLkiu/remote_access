@@ -1,5 +1,6 @@
 const express = require('express');
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -14,10 +15,11 @@ const app = express();
 const WebSocket = require('ws');
 const logger = require('./logger');
 
-const server = https.createServer({
-    key: fs.readFileSync('./ssl/server.key'),
-    cert: fs.readFileSync('./ssl/server.cert')
-}, app);
+const server = http.createServer(app);
+// const server = https.createServer({
+//     key: fs.readFileSync('./ssl/server.key'),
+//     cert: fs.readFileSync('./ssl/server.cert')
+// }, app);
 const wss = new WebSocket.Server({server});
 const executePythonFile = require('./services/commandExecutor');
 const PORT = 4000;
@@ -36,27 +38,53 @@ connectDB();
 //making sure the server is running
 
 // Initialize the port variable before use
-// app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
-// Start HTTPS Server
 server.listen(PORT, () => {
-    console.log(`Secure server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
+// Start HTTPS Server
+// server.listen(PORT, () => {
+//     console.log(`Secure server is running on port ${PORT}`);
+// });
 
 // ---------------- WebSocket Handling ----------------
-wss.on('connection', (ws) => {
-    console.log('Client connected to WebSocket');
+wss.on("connection", (ws) => {
+    console.log("New client connected");
 
-    ws.on('message', (message) => {
-        console.log(`Received message: ${message}`);
-        ws.send(`Echo: ${message}`); // Example response
+    // Store user info on connection
+    let username;
+    let type;
+
+    ws.on("message", (message) => {
+        // Assuming the first message contains user info (username and type)
+        const data = JSON.parse(message);
+
+        if (data.username && data.type) {
+            username = data.username;
+            type = data.type;
+            console.log(`User connected: ${username}, Type: ${type}`);
+        }
+
+        // Handle other actions from the user
+        switch (data.action) {
+            case "initiate_training":
+                console.log("Received training initiation request from", username);
+                ws.send(JSON.stringify({ action: "training_started" }));
+                break;
+            case "get_status":
+                console.log("Received status request from", username);
+                ws.send(JSON.stringify({ action: "training_status", status: "Running" }));
+                break;
+            default:
+                console.log("Unknown action:", data.action);
+                ws.send(JSON.stringify({ action: "error", message: "Unknown request" }));
+        }
     });
 
-    ws.on('close', () => {
-        console.log('Client disconnected from WebSocket');
+    ws.on("close", () => {
+        console.log(`${username} disconnected`);
     });
 });
+
 
 // ---------------------------------Middleware functions-----------------------------
 function refreshToken(req, res, next) {
