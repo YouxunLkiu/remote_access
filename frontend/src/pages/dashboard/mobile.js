@@ -6,10 +6,11 @@ import WebSocketClient from "../websockets/clientwebsocket";
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [error, setError] = useState(null);
+  const [wsClient, setWsClient] = useState(null);
   const router = useRouter();
   const { userID } = router.query;
   const [programs, setPrograms] = useState([]);
-  
+ 
  
   const dummyPrograms = [
     { id: 1, title: "Project A", details: "Details of Project A" },
@@ -19,7 +20,24 @@ export default function Dashboard() {
   useEffect(() => {
     // Check if userID exists before fetching
     if (!userID) return;
+    const client  = new WebSocketClient(userID, "mobile");
 
+
+
+
+
+
+    client.connect();
+
+    setWsClient(client);// Register a message handler
+    client.onMessage((message) => {
+      console.log("Received WebSocket message:", message);
+
+      // Handle different message types
+      if (message.action === "training_status") {
+        alert(`Training Status: ${message.status}`);
+      }
+    });
     // Set the dummy data initially (only once on mount)
     setPrograms(dummyPrograms);
 
@@ -42,11 +60,24 @@ export default function Dashboard() {
         console.error("Error fetching dashboard data:", error);
       }
     }
+    
+
+
+
+
 
     // Only fetch data if it's available
     fetchDashboardData();
+    return () => {
+      client.close();
+    };
   }, [userID]); // Run this effect only when userID changes
   
+  const handleAction = (programTitle) => {
+    if (wsClient) {
+      wsClient.sendMessage("initiate_training", { program: programTitle });
+    }
+  };
 
 
   return (
@@ -96,17 +127,21 @@ export default function Dashboard() {
         </div>
 
 
-        {/* WebSocket Connection */}
-        {userID && <WebSocketClient username={userID} type="mobile" />} 
 
         {/* Dashboard Widgets/Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {programs.map((dummyPrograms) => (
-            <div key={dummyPrograms.id} className="bg-white p-6 rounded shadow-md">
-            <h3 className="text-lg font-semibold mb-4">{dummyPrograms.title}</h3>
-            <p>{dummyPrograms.details}</p>
+        {programs.map((program) => (
+            <div key={program.id} className="bg-white p-6 rounded shadow-md">
+              <h3 className="text-lg font-semibold mb-4">{program.title}</h3>
+              <p>{program.details}</p>
+              <button
+                className="mt-4 bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded"
+                onClick={() => handleAction(program.title)}
+              >
+                Perform Action
+              </button>
             </div>
-        ))}
+          ))}
         </div>
 
       </div>

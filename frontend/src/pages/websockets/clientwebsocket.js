@@ -1,30 +1,48 @@
 import React, { useEffect } from "react";
 
-const WebSocketClient = ({ username, type }) => {
-    useEffect(() => {
-      // Corrected WebSocket URL with query parameters
-     
-      const ws = new WebSocket(`ws://localhost:4000`);
-      ws.onopen = (action) => {
-        console.log("Connected to the central server");
-        
+  class WebSocketClient {
+    constructor(username, type) {
+      this.username = username;
+      this.type = type;
+      this.ws = null;
+    }
+  
+    connect() {
+      this.ws = new WebSocket("ws://localhost:4000");
+  
+      this.ws.onopen = () => {
+        console.log("WebSocket connected");
+        this.sendMessage("check-in", { message: "try-connection" });
       };
   
-      ws.onmessage = (event) => {
-        console.log("Received from central server:", event.data);
+      this.ws.onmessage = (event) => {
+        console.log("Received:", event.data);
       };
   
-      ws.onclose = () => {
-        console.log("WebSocket closed");
+      this.ws.onclose = () => {
+        console.log("WebSocket disconnected");
       };
+    }
+
+    onMessage(handler) {
+      console.log("message handled");
+    }
+
   
-      return () => {
-        ws.close(); // Cleanup on component unmount
-      };
-    }, [username, type]); // Re-run when username or type changes
+    sendMessage(action, payload = {}) {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({ action, username: this.username, type: this.type, ...payload }));
+      } else {
+        console.error("WebSocket is not connected");
+      }
+    }
   
-    return <div>WebSocket Client</div>;
-  };
+    close() {
+      if (this.ws) {
+        this.ws.close();
+      }
+    }
+  }
   
   export default WebSocketClient;
   

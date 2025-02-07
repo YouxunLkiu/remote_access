@@ -47,41 +47,98 @@ server.listen(PORT, () => {
 // });
 
 // ---------------- WebSocket Handling ----------------
+
+const clientsockets = new Map(); // storing each users and their websocket connections.
+const PCsocket = new Map();
+
 wss.on("connection", (ws) => {
     console.log("New client connected");
-
+    
     // Store user info on connection
-    let username;
-    let type;
+    
 
     ws.on("message", (message) => {
         // Assuming the first message contains user info (username and type)
         const data = JSON.parse(message);
+    
+        
+        // check if websocket connection has been seen
+        if (data.username) {
+            if (data.type == "mobile" && !clientsockets.has(data.username)) {
+                console.log(`User connected: ${data.username}, Type: ${data.type}`);
+                clientsockets.set(data.username, ws); //store them into Map, if this is first time seeing
+                
+            } else if (data.type == "PC" && data.pcid && !PCsocket.has(`${data.username} ${data.pcid}`)) {
+                console.log(`User connected: ${data.username}, Type: ${data.type}, PCID: ${data.pcid}`);
+                clientsockets.set(`${data.username} ${data.pcid}`, ws);  //store them into Map, if this is first time seeing
+            }
+            
+        } 
+        
+        if (data.type == "mobile") {
+            switch (data.action) {
+                case "initiate_training":
+                    let pc = data.pcid;
+                    let destinationPC = PCsocket.get(`${data.username} ${data.pcid}`)
+                    if (!destinationPC) {
+                        console.log(`No PC of ${pc} has been connected, request abolished`, data.username);
+                        ws.send(JSON.stringify({ action: "Request failure" }));
+                    } else if (!data.program || !data.params){
+                        console.log("Received training initiation request from", data.username);
+                        ws.send(JSON.stringify({ action: "trainign_requested" }));
+                        destinationPC.send(JSON.stringify({ action: "initiate_training", program: `${data.program}`, params: `${data.params}`}));
+                    }
 
-        if (data.username && data.type) {
-            username = data.username;
-            type = data.type;
-            console.log(`User connected: ${username}, Type: ${type}`);
+
+                   
+                    break;
+                case "get_status":
+                    console.log("Received status request from", username);
+                    ws.send(JSON.stringify({ action: "training_status", status: "Running" }));
+                    break;
+                default:
+                    console.log("Unknown action:", data.action);
+                    
+                    ws.send(JSON.stringify({ action: "action recieves", message: "Unknown request", username: `${data.username}`, type: `${data.type}` }));
+            }
+        } else { //asuming it will be come from pc
+            switch (data.action) {
+                case "initiate_training_success": // {program, params}
+                    let destinationmobile = clientsockets.get(data.username);
+                    if (!destinationmobile) {
+                        console.log(`No mobile user of ${destinationmobile} has been connected, request abolished`, data.username);
+                        ws.send(JSON.stringify({ action: "Request failure" }));
+                    } else {
+                        console.log("initiate_training_success on program ", data.username);
+                        ws.send(JSON.stringify({ action: "Training began Successful" }));
+                        destinationmobile.send(JSON.stringify({ action: "training_began", program: `${data.program}`, params: `${data.params}`}));
+                    }
+
+
+                   
+                    break;
+                case "get_status":
+                    console.log("Received status request from", data.username);
+                    ws.send(JSON.stringify({ action: "training_status", status: "Running" }));
+                    break;
+                default:
+                    console.log("Unknown action:", data.action);
+                    console.log(data);
+                    ws.send(JSON.stringify({ action: "action recieves", message: "Unknown request", username: `${data.username}`, type: `${data.type}` }));
+            }
+
+
         }
+
+
 
         // Handle other actions from the user
-        switch (data.action) {
-            case "initiate_training":
-                console.log("Received training initiation request from", username);
-                ws.send(JSON.stringify({ action: "training_started" }));
-                break;
-            case "get_status":
-                console.log("Received status request from", username);
-                ws.send(JSON.stringify({ action: "training_status", status: "Running" }));
-                break;
-            default:
-                console.log("Unknown action:", data.action);
-                ws.send(JSON.stringify({ action: "error", message: "Unknown request" }));
-        }
+        
     });
 
     ws.on("close", () => {
         console.log(`${username} disconnected`);
+        clientsockets.delete(username);
     });
 });
 

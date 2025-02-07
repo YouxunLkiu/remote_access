@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 
-const PCWebSocketClient = ({ username, pcID }) => {
+const PCWebSocketClient = ({ username, type, pcID }) => {
   useEffect(() => {
-    const ws = new WebSocket(`ws://centralserver.com?pcID=${pcID}&type=pc`);
+    const ws = new WebSocket(`ws://localhost:4000`);
 
     ws.onopen = () => {
       console.log(`User(${username}) on PC (${pcID}) connected to the central server`);
@@ -27,7 +27,7 @@ const PCWebSocketClient = ({ username, pcID }) => {
     };
   }, [pcID]);
 
-  return <div>PC WebSocket Client Active</div>;
+  return null;
 };
 
 export default PCWebSocketClient;

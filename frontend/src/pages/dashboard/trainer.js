@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";  
+import PCWebSocketClient from "../websockets/pcwebsocket";
+const { randomUUID } = require("crypto");
+
+const uniqueID = randomUUID();
+console.log("Generated UUID:", uniqueID);
 
 // AddProjectModal Component
 const AddProjectModal = ({ isOpen, onClose, addProject }) => {
@@ -60,6 +65,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
             placeholder="Enter project description"
           />
         </div>
+        {userID && <PCWebSocketClient username={userID} type="mobile" />} 
         <div className="flex justify-between">
           <button
             onClick={onClose}
