@@ -64,16 +64,19 @@ wss.on("connection", (ws) => {
         
         // check if websocket connection has been seen
         if (data.username) {
+
             if (data.type == "mobile" && !clientsockets.has(data.username)) {
                 console.log(`User connected: ${data.username}, Type: ${data.type}`);
+                console.log(`putting ${data.username}`);
                 clientsockets.set(data.username, ws); //store them into Map, if this is first time seeing
-                
-            } else if (data.type == "PC" && data.pcid && !PCsocket.has(`${data.username} ${data.pcid}`)) {
+            } else if (data.type == "trainer" && data.pcid && !PCsocket.has(`${data.username} ${data.pcid}`)) {
                 console.log(`User connected: ${data.username}, Type: ${data.type}, PCID: ${data.pcid}`);
-                clientsockets.set(`${data.username} ${data.pcid}`, ws);  //store them into Map, if this is first time seeing
+                PCsocket.set(`${data.username} ${data.pcid}`, ws);  //store them into Map, if this is first time seeing
             }
             
         } 
+        console.log("clientsocketsize", clientsockets.size);
+        console.log("PCsocketsize", PCsocket.size);
         
         if (data.type == "mobile") {
             switch (data.action) {
@@ -123,7 +126,7 @@ wss.on("connection", (ws) => {
                     break;
                 default:
                     console.log("Unknown action:", data.action);
-                    console.log(data);
+                    
                     ws.send(JSON.stringify({ action: "action recieves", message: "Unknown request", username: `${data.username}`, type: `${data.type}` }));
             }
 
@@ -136,9 +139,11 @@ wss.on("connection", (ws) => {
         
     });
 
-    ws.on("close", () => {
-        console.log(`${username} disconnected`);
-        clientsockets.delete(username);
+    ws.on("close", (code, reason) => {
+        console.log(`user(${reason}) disconnected`);
+        clientsockets.delete(reason);
+        console.log(clientsockets.get(reason));
+        console.log(clientsockets.size);
     });
 });
 

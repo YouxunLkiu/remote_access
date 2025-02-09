@@ -1,18 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";  
 import PCWebSocketClient from "../websockets/pcwebsocket";
-const { randomUUID } = require("crypto");
+import { v4 as uuidv4 } from "uuid";
 
-const uniqueID = randomUUID();
-console.log("Generated UUID:", uniqueID);
+
+
+
 
 // AddProjectModal Component
 const AddProjectModal = ({ isOpen, onClose, addProject }) => {
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   
+  const [wsClient, setWsClient] = useState(null);
   const router = useRouter();  // Initialize the useRouter hook
   const { userID } = router.query;    
+  const uniqueID = uuidv4();
+  const os = require("os");
+  const crypto = require("crypto");
+
+  const systemInfo = {
+      hostname: os.hostname(),
+      cpu: os.cpus(),
+      platform: os.platform(),
+      release: os.release(),
+      totalMem: os.totalmem()
+  };
+
+  const uniqueId = crypto.createHash("sha256").update(JSON.stringify(systemInfo)).digest("hex");
+
+  useEffect(() => {
+    // Check if userID exists before fetching
+    if (!userID) return;
+    const client  = new PCWebSocketClient(userID, "trainer", uniqueId);
+
+
+    client.connect();
+
+    setWsClient(client);// Register a message handler
+    client.onMessage((message) => {
+      console.log("Received WebSocket message:", message);
+
+      // Handle different message types
+      if (message.action === "training_status") {
+        alert(`Training Status: ${message.status}`);
+      }
+    });
+    // Check already registered data initially (only once on mount)
+  
+    return () => {
+      client.close();
+    };
+  }, [userID]); 
+
+
+
+
+
 
   const handleSubmit = async () => {
     if (!projectName || !projectDescription) {

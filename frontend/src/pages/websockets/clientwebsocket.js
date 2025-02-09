@@ -8,7 +8,10 @@ import React, { useEffect } from "react";
     }
   
     connect() {
-      this.ws = new WebSocket("ws://localhost:4000");
+      if (this.ws == null) {
+        this.ws = new WebSocket("ws://localhost:4000");
+      }
+   
   
       this.ws.onopen = () => {
         console.log("WebSocket connected");
@@ -39,7 +42,7 @@ import React, { useEffect } from "react";
   
     close() {
       if (this.ws) {
-        this.ws.close();
+        this.ws.close(1000, this.username);
       }
     }
   }
