@@ -1,6 +1,7 @@
 // pages/dashboard.js
 import { useState, useEffect} from "react";
 import { useRouter } from "next/router";
+import { motion } from "framer-motion";
 import WebSocketClient from "../websockets/clientwebsocket";
 
 export default function Dashboard() {
@@ -13,9 +14,9 @@ export default function Dashboard() {
  
  
   const dummyPrograms = [
-    { id: 1, title: "Project A", details: "Details of Project A" },
-    { id: 2, title: "Project B", details: "Details of Project B" },
-    { id: 3, title: "Project C", details: "Details of Project C" },
+    { id: 1, title: "Project A", details: "Details of Project A" , status: "idle"},
+    { id: 2, title: "Project B", details: "Details of Project B" , status: "training"},
+    { id: 3, title: "Project C", details: "Details of Project C" , status: "offline"},
   ];
   useEffect(() => {
     // Check if userID exists before fetching
@@ -129,19 +130,37 @@ export default function Dashboard() {
 
 
         {/* Dashboard Widgets/Content */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {programs.map((program) => (
-            <div key={program.id} className="bg-white p-6 rounded shadow-md">
-              <h3 className="text-lg font-semibold mb-4">{program.title}</h3>
-              <p>{program.details}</p>
-              <button
-                className="mt-4 bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded"
-                onClick={() => handleAction(program.title)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 rounded lg:grid-cols-3 gap-6">
+        {programs.map((program) => {
+            const borderColor =
+              program.status === "idle" ? "border-orange-500" :
+              program.status === "training" ? "border-green-500" :
+              "border-gray-500";
+
+            return (
+              <motion.div
+                key={program.id}
+                className={`bg-white p-6 rounded-2xl shadow-md border-8 ${borderColor}`}
+                animate={
+                  program.status === "training" ?
+                    { borderColor: ["#22c55e", "#065f46", "#22c55e"] } : {}
+                }
+                transition={
+                  program.status === "training" ?
+                    { duration: 3, repeat: Infinity, ease: "easeInOut" } : {}
+                }
               >
-                Perform Action
-              </button>
-            </div>
-          ))}
+                <h3 className="text-lg font-semibold mb-4">{program.title}</h3>
+                <p>{program.details}</p>
+                <button
+                  className="mt-4 bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded"
+                  onClick={() => handleAction(program.title)}
+                >
+                  Perform Action
+                </button>
+              </motion.div>
+            );
+          })}
         </div>
 
       </div>

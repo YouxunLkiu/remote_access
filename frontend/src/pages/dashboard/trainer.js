@@ -4,9 +4,6 @@ import PCWebSocketClient from "../websockets/pcwebsocket";
 import { v4 as uuidv4 } from "uuid";
 
 
-
-
-
 // AddProjectModal Component
 const AddProjectModal = ({ isOpen, onClose, addProject }) => {
   const [projectName, setProjectName] = useState("");
@@ -55,9 +52,6 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
 
 
 
-
-
-
   const handleSubmit = async () => {
     if (!projectName || !projectDescription) {
       alert("Project name and description are required.");
@@ -71,7 +65,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({userID, projectName, projectDescription }),
+      body: JSON.stringify({userID : userID, projectName: projectName, projectDescription:projectDescription, pcid: wsClient.pcid}),
     });
 
     if (response.ok) {
@@ -128,6 +122,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
     </div>
   );
 };
+
 
 // Dashboard.jsx (Parent Component)
 const Dashboard = () => {

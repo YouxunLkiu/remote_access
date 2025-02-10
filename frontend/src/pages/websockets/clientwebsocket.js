@@ -19,7 +19,7 @@ import React, { useEffect } from "react";
       };
   
       this.ws.onmessage = (event) => {
-        console.log("Received:", event.data);
+        console.log("Received: on open", event.data);
       };
   
       this.ws.onclose = () => {
