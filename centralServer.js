@@ -341,7 +341,7 @@ app.post('/register', async (req, res) => {
 /** This is used for authentication of the user account status */
 const authenticate = (req, res, next) => {
     const token = req.cookies.authToken; // Replace 'authToken' with the name of your cookie
-    console.log(req);
+    console.log(req.cookies);
     if (!token) {
         logger.error('No token provided in the request.');
         return res.status(401).json({ message: 'Access denied. No token provided.'});

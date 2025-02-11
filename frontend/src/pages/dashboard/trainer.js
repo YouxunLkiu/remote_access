@@ -15,7 +15,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
   const uniqueID = uuidv4();
   const os = require("os");
   const crypto = require("crypto");
-
+  const token = sessionStorage.getItem(`${userID}mobiletoken`);
   const systemInfo = {
       hostname: os.hostname(),
       cpu: os.cpus(),

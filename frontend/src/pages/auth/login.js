@@ -25,22 +25,23 @@ export default function SignIn() {
     });
    
     const data = await res.json();
-    console.log(data);
+    
     if (res.ok) {
      
-
-      
+      sessionStorage.setItem(`${userID}${dashboardType}token`, data.token);
+      console.log(sessionStorage.getItem(`${userID}${dashboardType}token`));
       // Redirect to the appropriate dashboard
       if (dashboardType === "mobile") {
         router.push({
           pathname: "/dashboard/mobile",
-          query: {userID},
+          query: {userID: userID},
         });
       } else {
         router.push({
           pathname: "/dashboard/trainer",
-          query: {userID},
+          query: {userID: userID},
         });
+
       }
     } else {
       // On error, display an error message
@@ -52,7 +53,7 @@ export default function SignIn() {
   return (
     <div className="bg-primary min-h-screen flex items-center justify-center">
       {/* Outer Box */}
-      <div className="bg-white p-8 rounded shadow-lg w-full max-w-md">
+      <div className="bg-white p-8 rounded rounded-xl shadow-lg w-full max-w-md">
         <h1 className="text-center text-2xl font-bold mb-6">Login</h1>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit}>

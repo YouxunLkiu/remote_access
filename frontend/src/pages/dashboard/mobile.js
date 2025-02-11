@@ -10,9 +10,11 @@ export default function Dashboard() {
   const [wsClient, setWsClient] = useState(null);
   const router = useRouter();
   const { userID } = router.query;
+
   const [programs, setPrograms] = useState([]);
  
- 
+  const token = sessionStorage.getItem(`${userID}mobiletoken`);
+  
   const dummyPrograms = [
     { id: 1, title: "Project A", details: "Details of Project A" , status: "idle"},
     { id: 2, title: "Project B", details: "Details of Project B" , status: "training"},
@@ -61,10 +63,6 @@ export default function Dashboard() {
       }
     }
     
-
-
-
-
 
     // Only fetch data if it's available
     fetchDashboardData();

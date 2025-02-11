@@ -9,3 +9,8 @@ info: Log created successfully for user: tester with appID: test {"timestamp":"2
 info: Log created successfully for user: tester with appID: test {"timestamp":"2025-02-04T09:00:50.074Z"}
 error: No token provided in the request. {"timestamp":"2025-02-11T01:24:53.760Z"}
 error: No token provided in the request. {"timestamp":"2025-02-11T01:32:45.844Z"}
+error: No token provided in the request. {"timestamp":"2025-02-11T11:05:50.368Z"}
+error: No token provided in the request. {"timestamp":"2025-02-11T11:07:45.019Z"}
+error: No token provided in the request. {"timestamp":"2025-02-11T11:08:03.969Z"}
+error: No token provided in the request. {"timestamp":"2025-02-11T11:11:43.819Z"}
+error: No token provided in the request. {"timestamp":"2025-02-11T11:11:56.686Z"}
