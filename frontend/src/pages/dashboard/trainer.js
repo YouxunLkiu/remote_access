@@ -29,7 +29,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
   useEffect(() => {
     // Check if userID exists before fetching
     if (!userID) return;
-    const client  = new PCWebSocketClient(userID, "trainer", uniqueId);
+    const client = new PCWebSocketClient(userID, "trainer", uniqueId);
 
 
     client.connect();
@@ -51,6 +51,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
   }, [userID]); 
 
 
+  
 
   const handleSubmit = async () => {
     if (!projectName || !projectDescription) {
@@ -59,6 +60,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
     }
 
     const token = sessionStorage.getItem("token");
+    console.log(token);
     const response = await fetch("/api/addProject", {
       method: "POST",
       headers: {
@@ -83,27 +85,26 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
   return (
     <div className="fixed inset-0 bg-grey-300 bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
-        <h2 className="text-xl font-semibold mb-4">Add New Project</h2>
+        <h2 className="text-xl text-black font-semibold mb-4">Add New Project</h2>
         <div>
-          <label className="block text-sm font-medium">Project Name</label>
+          <label className="block text-sm text-black font-medium">Project Name</label>
           <input
             type="text"
             value={projectName}
             onChange={(e) => setProjectName(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded mb-4"
+            className="w-full p-2 border text-black border-gray-300 rounded mb-4"
             placeholder="Enter project name"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium">Project Description</label>
+          <label className="block text-black text-sm font-medium">Project Description</label>
           <textarea
             value={projectDescription}
             onChange={(e) => setProjectDescription(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded mb-4"
+            className="w-full p-2 border text-black border-gray-300 rounded mb-4"
             placeholder="Enter project description"
           />
         </div>
-        {userID && <PCWebSocketClient username={userID} type="mobile" />} 
         <div className="flex justify-between">
           <button
             onClick={onClose}
@@ -135,14 +136,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-primary text-white">
+    <div className=" min-h-screen bg-primary text-white">
       {/* Projects List */}
       <div className="flex items-start justify-between">
-        <h2 className="text-xl font-bold mb-4 px-5">My Projects</h2>
+        <h2 className="text-xl mx-4 my-4 font-bold mb-4 px-5">My Projects</h2>
         
         <button
           onClick={() => setIsModalOpen(true)}
-          className="button-primary-light"
+          className="button-primary-light mx-8 my-4"
         >
           Add Project
         </button>
@@ -154,7 +155,7 @@ const Dashboard = () => {
           addProject={handleAddProject}
         />
       </div>
-      <div className="flex p-6 px-2 max-w-7xl mx-auto">
+      <div className="flex p-6 px-2  mx-10 my-4 max-w-7xl mx-auto">
         <ul>
           {projects.length > 0 ? (
             projects.map((project, index) => (

@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const User = require('./models/user');
 const TrainingLog = require('./models/monitor');
-const Command = require('./models/command');
+const Program = require('./models/programs');
 const connectDB = require('./config/db');
 const app = express();
 const WebSocket = require('ws');
@@ -521,12 +521,48 @@ app.get('/execution-status', authenticate, authorizeRole(['mobile']), async (req
 
 
 // ---------------------- Project/Program management-----------------------------
-//POST /addproject for the trainer environment to get linkage with the program.
+//POST /addproject for the trainer environment to get linkage with the program and the client record.
 app.post( '/addProject', authenticate, authorizeRole(['trainer']), async (req, res) => {
-    const {userID, projectName, projectDescription } = req.body;
+    const {userID, projectName, projectDescription, pcid } = req.body;
         //check if such project name is already named.
-    
+    const program = await Program.find(userID, pcid, projectName, projectDescription);    
+    if (program) {
+        return res.status(400).json({ program: 'The program already created at this PC.'});
+    } 
+    try {
+        const newproject = new Program({
+            userID, 
+            pcid,
+            projectName, 
+            projectDescription
+        });
+        newproject.save();
+        res.status(200).json({userID: userID, pcid: pcid, projectName: projectName, 
+            projectDescription: projectDescription, message: "Successfully added project"});
+    } catch (error) {
+        res.status(500).json({ message: "Project adding failed", error: error.message});
+    }
 } );
+
+
+//POST /changeDescription for the trainer environment to get linkage with the program.
+app.post('/changeDescription', authenticate, authorizeRole(['trainer', 'mobile']), async (req, res) => {
+    const {userID, projectName, pcid, newProjectName, newDescription } = req.body;
+    if (!newProjectName) {
+        newProjectName = projectName;
+    }
+    const program = await Program.findOneAndUpdate(
+        {userID: userID, pcid: pcid, projectName: projectName}, 
+        {$set: {projectName: newProjectName, projectDescription: newDescription}},
+        {returnDocument: "before"});  
+    if (program) {
+        return res.status(400).json({ program: 'The program already created at this PC.'});
+    } else {
+        return res.status(200).json({ message: "Desctiption updated", projectName })
+    }
+
+});
+
 
 //-----------------------Endpoint TESTING: Endpoint testing mongoD connection-------------------
 

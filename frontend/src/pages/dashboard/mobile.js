@@ -29,7 +29,6 @@ export default function Dashboard() {
 
 
     client.connect();
-
     setWsClient(client);// Register a message handler
     client.onMessage((message) => {
       console.log("Received WebSocket message:", message);

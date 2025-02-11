@@ -25,7 +25,7 @@ import React, { useEffect } from "react";
       };
     }
 
-    onMessage(handler) {
+    onMessage() {
       console.log("message handled");
     }
 

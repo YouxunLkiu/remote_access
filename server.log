@@ -7,3 +7,5 @@ info: Log created successfully for user: testagain@gmail.com with appID: test {"
 info: Log created successfully for user: testagain@gmail.com with appID: test {"timestamp":"2025-01-14T00:40:16.329Z"}
 info: Log created successfully for user: tester with appID: test {"timestamp":"2025-02-04T08:58:40.210Z"}
 info: Log created successfully for user: tester with appID: test {"timestamp":"2025-02-04T09:00:50.074Z"}
+error: No token provided in the request. {"timestamp":"2025-02-11T01:24:53.760Z"}
+error: No token provided in the request. {"timestamp":"2025-02-11T01:32:45.844Z"}

@@ -25,11 +25,11 @@ export default function SignIn() {
     });
    
     const data = await res.json();
-
+    console.log(data);
     if (res.ok) {
      
 
-
+      
       // Redirect to the appropriate dashboard
       if (dashboardType === "mobile") {
         router.push({
