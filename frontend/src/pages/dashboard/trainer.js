@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";  
 import PCWebSocketClient from "../websockets/pcwebsocket";
 import { v4 as uuidv4 } from "uuid";
-
+import '../../styles/globals.css';
 
 // AddProjectModal Component
 const AddProjectModal = ({ isOpen, onClose, addProject }) => {
@@ -15,7 +15,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
   const uniqueID = uuidv4();
   const os = require("os");
   const crypto = require("crypto");
-  const token = sessionStorage.getItem(`${userID}mobiletoken`);
+  
   const systemInfo = {
       hostname: os.hostname(),
       cpu: os.cpus(),
@@ -48,6 +48,7 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
     return () => {
       client.close();
     };
+    
   }, [userID]); 
 
 
@@ -59,14 +60,13 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
       return;
     }
 
-    const token = sessionStorage.getItem("token");
-    console.log(token);
     const response = await fetch("/api/addProject", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        "Authorization": `Bearer ${sessionStorage.getItem(`${userID}trainertoken`)}`,
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({userID : userID, projectName: projectName, projectDescription:projectDescription, pcid: wsClient.pcid}),
     });
 
@@ -79,6 +79,9 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
       alert(`Error: ${data.message}`);
     }
   };
+
+
+  
 
   if (!isOpen) return null;
 
@@ -129,10 +132,14 @@ const AddProjectModal = ({ isOpen, onClose, addProject }) => {
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projects, setProjects] = useState([]);
-
+  const router = useRouter();  // Initialize the useRouter hook
+  const { userID } = router.query;
   const handleAddProject = (projectName, projectDescription) => {
     // Optionally, add the new project to the local state
     setProjects([...projects, { projectName, projectDescription }]);
+  };
+  const testerButton = async () => {
+    console.log(sessionStorage.getItem(`${userID}trainertoken`))
   };
 
   return (
@@ -155,6 +162,12 @@ const Dashboard = () => {
           addProject={handleAddProject}
         />
       </div>
+      <div> 
+          <button
+            onClick= {() => testerButton()}>
+              clickme
+          </button>
+        </div>
       <div className="flex p-6 px-2  mx-10 my-4 max-w-7xl mx-auto">
         <ul>
           {projects.length > 0 ? (

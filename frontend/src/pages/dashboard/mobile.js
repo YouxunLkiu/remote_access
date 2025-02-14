@@ -3,6 +3,7 @@ import { useState, useEffect} from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import WebSocketClient from "../websockets/clientwebsocket";
+import '../../styles/globals.css';
 
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -13,7 +14,6 @@ export default function Dashboard() {
 
   const [programs, setPrograms] = useState([]);
  
-  const token = sessionStorage.getItem(`${userID}mobiletoken`);
   
   const dummyPrograms = [
     { id: 1, title: "Project A", details: "Details of Project A" , status: "idle"},
@@ -77,6 +77,9 @@ export default function Dashboard() {
     }
   };
 
+  const testerButton = async () => {
+    console.log(sessionStorage.getItem(`${userID}mobiletoken`))
+  };
 
   return (
     <div className="bg-primary min-h-screen flex">
@@ -116,7 +119,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center mb-6">
         {/* Toggle Button for Mobile */}
         <button
-            className="md:hidden bg-blue-800 text-white p-2 rounded"
+            className="md:hidden bg-blue-800 mx-3 text-white p-2 rounded"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         >
             {isSidebarOpen ? "Close Menu" : "Open Menu"}
@@ -124,10 +127,10 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-grey-200"> Your Projects</h1>
         </div>
 
-
+        
 
         {/* Dashboard Widgets/Content */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 rounded lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 mx-5 sm:grid-cols-2 rounded lg:grid-cols-3 gap-6">
         {programs.map((program) => {
             const borderColor =
               program.status === "idle" ? "border-orange-500" :
@@ -158,6 +161,12 @@ export default function Dashboard() {
               </motion.div>
             );
           })}
+        </div>
+        <div> 
+          <button
+            onClick= {() => testerButton()}>
+              clickme
+          </button>
         </div>
 
       </div>

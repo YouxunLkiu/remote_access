@@ -15,13 +15,14 @@ export default async function handler(req, res) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ userID, password }),
         
       });
       
       
       const data = await response.json();
-      
+      console.log(data);
       if (response.ok) {
         // Successful login: return the token or user data
        

@@ -171,7 +171,7 @@ function refreshToken(req, res, next) {
         );
 
         // Send the new token back to the client (you can send it in a cookie or as a response header)
-        res.cookie('authToken', newToken, { httpOnly: true, secure: true }); // Set new token in cookie (for example)
+        res.cookie('authToken', newToken, { httpOnly: true, secure: true, sameSite: "Strict",}); // Set new token in cookie (for example)
         
         next();
     });
@@ -236,6 +236,7 @@ app.post('/login', async (req, res) => {
 function authenticateToken(req, res, next) {
     // Extract token from cookies (assuming the cookie name is 'authToken')
     const token = req.cookies.authToken;
+    console.log(req);
     if (!token) {
         return res.status(401).json({ message: 'Access denied. No token provided.'});
     }
@@ -341,7 +342,7 @@ app.post('/register', async (req, res) => {
 /** This is used for authentication of the user account status */
 const authenticate = (req, res, next) => {
     const token = req.cookies.authToken; // Replace 'authToken' with the name of your cookie
-    console.log(req.cookies);
+    console.log(req);
     if (!token) {
         logger.error('No token provided in the request.');
         return res.status(401).json({ message: 'Access denied. No token provided.'});

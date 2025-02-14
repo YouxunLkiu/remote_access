@@ -5,13 +5,14 @@ export default async function handler(req, res) {
     
    
     const {userID, projectName, projectDescription, pcid } = req.body;
-
+    console.log(req.credentials);
     try {
         const response = await fetch("http://localhost:4000/addProject", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({ userID:userID, userprojectNameID: projectName, projectDescription: projectDescription, pcid: pcid }),
           
         });
